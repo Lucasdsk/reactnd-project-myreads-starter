@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import * as BooksAPI from './../../BooksAPI';
 import BooksShelf from './../../components/booksShelf';
+import Loading from './../../components/loading'
 
 /**
  * Função de debouce para não fazer muitas requisições para a API
@@ -57,10 +58,28 @@ class Search extends Component {
     });
   }
 
+  renderBooks = () => {
+    const { books, loadingBooks } = this.state;
+
+    if (!!books.length) {
+      return (
+        <BooksShelf
+          title="Books found"
+          loadingBooks={loadingBooks}
+          books={books}
+        />
+      );
+    } else if (!loadingBooks) {
+      return (
+        <h2>No book found! Search by title or author</h2>
+      );
+    } else {
+      return <Loading />;
+    }
+  }
+
   render() {
     const {
-      loadingBooks,
-      books,
       searchTerm
     } = this.state;
 
@@ -78,15 +97,7 @@ class Search extends Component {
           </div>
         </div>
         <div className="search-books-results">
-          {
-            books.length ?
-              <BooksShelf
-                title="Books found"
-                loadingBooks={loadingBooks}
-                books={books}
-              />
-            : <h2>No book found! Search by title or author</h2>
-          }
+          { this.renderBooks() }
         </div>
       </div>
     );
