@@ -11,8 +11,7 @@ const shelfs = [
 class DropDown extends Component {
 
   state = {
-    opened: false,
-    selectedShelf: 'none',
+    opened: false
   }
 
   toggleOptions = () => {
@@ -22,23 +21,31 @@ class DropDown extends Component {
   }
 
   changeShelf = (shelf) => {
+    const { book } = this.props
     this.setState(prevState => ({
-      selectedShelf: shelf,
       opened: !prevState.opened,
-    }));
+    }), () => this.props.onChange(book, shelf));
   }
 
   render() {
+    const {
+      opened
+    } = this.state;
+
+    const {
+      selectedShelf
+    } = this.props;
+
     return (
       <div className="book-shelf-container">
-        <div className={`book-shelf-bg ${this.state.opened ? 'opened' : ''}`} onClick={this.toggleOptions} />
+        <div className={`book-shelf-bg ${opened ? 'opened' : ''}`} onClick={this.toggleOptions} />
         <div className="book-shelf-changer" onClick={this.toggleOptions} />
-        <div className={`book-shelf-changer-options ${this.state.opened ? 'opened' : ''}`}>
+        <div className={`book-shelf-changer-options ${opened ? 'opened' : ''}`}>
           {
             shelfs.map(shelf => (
               <div
                 key={shelf}
-                className={`book-shelf-changer-item ${this.state.selectedShelf === shelf ? 'selectedOption' : ''}`}
+                className={`book-shelf-changer-item ${selectedShelf === shelf ? 'selectedOption' : ''}`}
                 onClick={() => this.changeShelf(shelf)}
               >
                 {shelf}
@@ -51,8 +58,14 @@ class DropDown extends Component {
   }
 }
 
+DropDown.defaultProps = {
+  selectedShelf: 'none'
+};
+
 DropDown.propTypes = {
+  book: PropTypes.object.isRequired,
   selectedShelf: PropTypes.string,
-}
+  onChange: PropTypes.func
+};
 
 export default DropDown;

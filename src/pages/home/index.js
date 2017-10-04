@@ -1,39 +1,68 @@
-import React, { Component } from 'react'
-import * as BooksAPI from './../../BooksAPI'
-import { Link } from 'react-router-dom'
-import BooksShelf from './../../components/booksShelf'
+import React, { Component } from 'react';
+import * as BooksAPI from './../../BooksAPI';
+import { Link } from 'react-router-dom';
+import BooksShelf from './../../components/booksShelf';
 
 class Home extends Component {
 
   state = {
-    shelfCurrentlyReading: [],
-    shelfWantToRead: [],
-    shelfRead: [],
-    loadingBooks: true,
+    shelfs: {
+      currentlyReading: [],
+      wantToRead: [],
+      read: []
+    },
+    books: [],
+    loadingBooks: true
   }
 
   async componentDidMount() {
-    const books = await BooksAPI.getAll()
-    console.log('allBooks', books)
+    const books = await BooksAPI.getAll();
+    console.log('allBooks', books);
     this.setState({
       loadingBooks: false,
-      shelfCurrentlyReading: this.filterBooksByShelf(books, 'currentlyReading'),
-      shelfWantToRead: this.filterBooksByShelf(books, 'wantToRead'),
-      shelfRead: this.filterBooksByShelf(books, 'read'),
-    })
+      books,
+      shelfs: {
+        currentlyReading: this.filterBooksByShelf(books, 'currentlyReading'),
+        wantToRead: this.filterBooksByShelf(books, 'wantToRead'),
+        read: this.filterBooksByShelf(books, 'read')
+      }
+    });
   }
 
   filterBooksByShelf = (books = [], shelf = '') => {
-    return books.filter(book => book.shelf === shelf)
+    return books.filter(book => book.shelf === shelf);
+  }
+
+  updateBookShelf = async (book, shelf) => {
+    // console.log('[updateBookShelf]', book, shelf)
+    this.setState({
+      loadingBooks: true
+    });
+
+    const shelfsUpdated = await BooksAPI.update(book, shelf);
+    console.log('bookUpdated', shelfsUpdated);
+
+    Object.keys(shelfsUpdated).forEach(shelf => {
+      this.setState(prevState => ({
+        loadingBooks: false,
+        shelfs: {
+          ...prevState.shelfs,
+          [shelf]: prevState.books.filter(book => shelfsUpdated[shelf].includes(book.id))
+        }
+      }));
+    });
   }
 
   render() {
     const {
-      shelfCurrentlyReading,
-      shelfWantToRead,
-      shelfRead,
-      loadingBooks,
-    } = this.state
+      shelfs: {
+        currentlyReading,
+        wantToRead,
+        read
+      },
+      loadingBooks
+    } = this.state;
+
     return (
       <div className="list-books">
         <div className="list-books-title">
@@ -44,17 +73,20 @@ class Home extends Component {
             <BooksShelf
               title="Currently Reading"
               loadingBooks={loadingBooks}
-              books={shelfCurrentlyReading}
+              books={currentlyReading}
+              updateBook={this.updateBookShelf}
             />
             <BooksShelf
               title="Want to Read"
               loadingBooks={loadingBooks}
-              books={shelfWantToRead}
+              books={wantToRead}
+              updateBook={this.updateBookShelf}
             />
             <BooksShelf
               title="Read"
               loadingBooks={loadingBooks}
-              books={shelfRead}
+              books={read}
+              updateBook={this.updateBookShelf}
             />
           </div>
         </div>
@@ -64,8 +96,8 @@ class Home extends Component {
           </Link>
         </div>
       </div>
-    )
+    );
   }
 }
 
-export default Home
+export default Home;

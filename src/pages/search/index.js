@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import * as BooksAPI from './../../BooksAPI';
 import BooksShelf from './../../components/booksShelf';
-import Loading from './../../components/loading'
+import Loading from './../../components/loading';
 
 /**
  * Função de debouce para não fazer muitas requisições para a API
@@ -67,6 +67,7 @@ class Search extends Component {
           title="Books found"
           loadingBooks={loadingBooks}
           books={books}
+          updateBook={this.updateBookShelf}
         />
       );
     } else if (!loadingBooks) {
@@ -76,6 +77,26 @@ class Search extends Component {
     } else {
       return <Loading />;
     }
+  }
+
+  updateBookShelf = async (book, shelf) => {
+    // console.log('[updateBookShelf]', book, shelf)
+    this.setState({
+      loadingBooks: true
+    });
+
+    const shelfsUpdated = await BooksAPI.update(book, shelf);
+    console.log('bookUpdated', shelfsUpdated);
+
+    Object.keys(shelfsUpdated).forEach(shelf => {
+      this.setState(prevState => ({
+        loadingBooks: false,
+        shelfs: {
+          ...prevState.shelfs,
+          [shelf]: prevState.books.filter(book => shelfsUpdated[shelf].includes(book.id))
+        }
+      }));
+    });
   }
 
   render() {
