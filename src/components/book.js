@@ -10,7 +10,7 @@ const Book = ({ data, updateBook }) => {
       thumbnail,
     },
     shelf,
-  } = data
+  } = data;
 
   return (
     <div className="book">
@@ -25,7 +25,7 @@ const Book = ({ data, updateBook }) => {
       <div className="book-title">{title}</div>
       <div className="book-authors">{authors && authors.join(',')}</div>
     </div>
-  )
+  );
 };
 
 Book.propTypes = {

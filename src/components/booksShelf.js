@@ -17,15 +17,15 @@ const renderBooks = (books, updateBook) => {
           ))
         }
       </ol>
-    )
+    );
   }
 
   return (
     <div>
       <h2>No books on the shelf</h2>
     </div>
-  )
-}
+  );
+};
 
 const BooksShelf = ({ title, books, loadingBooks, updateBook }) => (
   <div className="bookshelf">

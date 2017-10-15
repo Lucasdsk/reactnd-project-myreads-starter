@@ -17,7 +17,6 @@ class Home extends Component {
 
   async componentDidMount() {
     const books = await BooksAPI.getAll();
-    console.log('allBooks', books);
     this.setState({
       loadingBooks: false,
       books,
@@ -34,13 +33,11 @@ class Home extends Component {
   }
 
   updateBookShelf = async (book, shelf) => {
-    // console.log('[updateBookShelf]', book, shelf)
     this.setState({
       loadingBooks: true
     });
 
     const shelfsUpdated = await BooksAPI.update(book, shelf);
-    console.log('bookUpdated', shelfsUpdated);
 
     Object.keys(shelfsUpdated).forEach(shelf => {
       this.setState(prevState => ({
@@ -60,6 +57,7 @@ class Home extends Component {
         wantToRead,
         read
       },
+      books,
       loadingBooks
     } = this.state;
 
@@ -91,7 +89,10 @@ class Home extends Component {
           </div>
         </div>
         <div className="open-search">
-          <Link to="/search">
+          <Link to={{
+            pathname: '/search',
+            state: { books }
+          }}>
             Add a book
           </Link>
         </div>

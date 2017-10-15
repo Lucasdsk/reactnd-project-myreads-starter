@@ -31,7 +31,18 @@ class Search extends Component {
   state = {
     loadingBooks: false,
     books: [],
+    booksFromHome: [],
     searchTerm: ''
+  }
+
+  componentDidMount() {
+    const {
+      books
+    } = this.props.location.state;
+
+    this.setState({
+      booksFromHome: books
+    });
   }
 
   searchBooks = (event) => {
@@ -44,9 +55,26 @@ class Search extends Component {
       debounce(async () => {
         const books = await BooksAPI.search(value);
         if (books) {
+          const {
+            booksFromHome
+          } = this.state;
+
+          const booksWithShelf = books.map((book) => {
+            const indexBook = booksFromHome.findIndex((bookHome) => book.id === bookHome.id);
+
+            if (indexBook > -1) {
+              return {
+                ...book,
+                shelf: booksFromHome[indexBook].shelf
+              };
+            }
+
+            return book;
+          });
+
           this.setState({
             loadingBooks: false,
-            books
+            books: booksWithShelf
           });
         } else {
           this.setState({
@@ -80,23 +108,23 @@ class Search extends Component {
   }
 
   updateBookShelf = async (book, shelf) => {
-    // console.log('[updateBookShelf]', book, shelf)
     this.setState({
       loadingBooks: true
     });
 
-    const shelfsUpdated = await BooksAPI.update(book, shelf);
-    console.log('bookUpdated', shelfsUpdated);
-
-    Object.keys(shelfsUpdated).forEach(shelf => {
-      this.setState(prevState => ({
-        loadingBooks: false,
-        shelfs: {
-          ...prevState.shelfs,
-          [shelf]: prevState.books.filter(book => shelfsUpdated[shelf].includes(book.id))
-        }
-      }));
-    });
+    await BooksAPI.update(book, shelf);
+    const bookIndex = this.state.books.findIndex(currentBook => currentBook.id === book.id);
+    this.setState(prevState => ({
+      loadingBooks: false,
+      books: [
+        ...prevState.books.slice(0, bookIndex),
+        {
+          ...book,
+          shelf
+        },
+        ...prevState.books.slice(bookIndex + 1)
+      ]
+    }));
   }
 
   render() {
